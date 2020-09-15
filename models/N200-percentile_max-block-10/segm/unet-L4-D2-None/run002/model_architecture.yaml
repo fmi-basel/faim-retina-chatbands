@@ -1,0 +1,1480 @@
+backend: tensorflow
+class_name: Model
+config:
+  input_layers:
+  - - input_1
+    - 0
+    - 0
+  layers:
+  - class_name: InputLayer
+    config:
+      batch_input_shape: !!python/tuple
+      - null
+      - null
+      - null
+      - 1
+      dtype: float32
+      name: input_1
+      sparse: false
+    inbound_nodes: []
+    name: input_1
+  - class_name: ScalingLayer
+    config:
+      lower: 0
+      name: scaling_layer_1
+      trainable: true
+      upper: 30000
+    inbound_nodes:
+    - - - input_1
+        - 0
+        - 0
+        - {}
+    name: scaling_layer_1
+  - class_name: DynamicPaddingLayer
+    config:
+      data_format: channels_last
+      factor: 2
+      name: outer_pad
+      ndim: 4
+      trainable: true
+    inbound_nodes:
+    - - - scaling_layer_1
+        - 0
+        - 0
+        - {}
+    name: outer_pad
+  - class_name: Conv2D
+    config:
+      activation: relu
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: &id001 !!python/tuple
+      - 1
+      - 1
+      filters: 192
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config:
+          distribution: uniform
+          mode: fan_avg
+          scale: 1.0
+          seed: null
+      kernel_regularizer: null
+      kernel_size: !!python/tuple
+      - 2
+      - 2
+      name: conv2d_1
+      padding: valid
+      strides: !!python/tuple
+      - 2
+      - 2
+      trainable: true
+      use_bias: true
+    inbound_nodes:
+    - - - outer_pad
+        - 0
+        - 0
+        - {}
+    name: conv2d_1
+  - class_name: Model
+    config:
+      input_layers:
+      - - input
+        - 0
+        - 0
+      layers:
+      - class_name: InputLayer
+        config:
+          batch_input_shape: !!python/tuple
+          - null
+          - null
+          - null
+          - 192
+          dtype: float32
+          name: input
+          sparse: false
+        inbound_nodes: []
+        name: input
+      - class_name: DynamicPaddingLayer
+        config:
+          data_format: channels_last
+          factor: 16
+          name: dpad
+          ndim: 4
+          trainable: true
+        inbound_nodes:
+        - - - input
+            - 0
+            - 0
+            - {}
+        name: dpad
+      - class_name: Conv2D
+        config:
+          activation: linear
+          activity_regularizer: null
+          bias_constraint: null
+          bias_initializer:
+            class_name: Zeros
+            config: {}
+          bias_regularizer: null
+          data_format: channels_last
+          dilation_rate: *id001
+          filters: 48
+          kernel_constraint: null
+          kernel_initializer:
+            class_name: VarianceScaling
+            config:
+              distribution: uniform
+              mode: fan_avg
+              scale: 1.0
+              seed: null
+          kernel_regularizer: null
+          kernel_size: !!python/tuple
+          - 3
+          - 3
+          name: CB_L00_C0_cnv
+          padding: same
+          strides: &id002 !!python/tuple
+          - 1
+          - 1
+          trainable: true
+          use_bias: true
+        inbound_nodes:
+        - - - dpad
+            - 0
+            - 0
+            - {}
+        name: CB_L00_C0_cnv
+      - class_name: BatchNormalization
+        config:
+          axis: -1
+          beta_constraint: null
+          beta_initializer:
+            class_name: Zeros
+            config: {}
+          beta_regularizer: null
+          center: true
+          epsilon: 0.001
+          gamma_constraint: null
+          gamma_initializer:
+            class_name: Ones
+            config: {}
+          gamma_regularizer: null
+          momentum: 0.99
+          moving_mean_initializer:
+            class_name: Zeros
+            config: {}
+          moving_variance_initializer:
+            class_name: Ones
+            config: {}
+          name: CB_L00_C0_bn
+          scale: true
+          trainable: true
+        inbound_nodes:
+        - - - CB_L00_C0_cnv
+            - 0
+            - 0
+            - {}
+        name: CB_L00_C0_bn
+      - class_name: Conv2D
+        config:
+          activation: linear
+          activity_regularizer: null
+          bias_constraint: null
+          bias_initializer:
+            class_name: Zeros
+            config: {}
+          bias_regularizer: null
+          data_format: channels_last
+          dilation_rate: *id001
+          filters: 48
+          kernel_constraint: null
+          kernel_initializer:
+            class_name: VarianceScaling
+            config:
+              distribution: uniform
+              mode: fan_avg
+              scale: 1.0
+              seed: null
+          kernel_regularizer: null
+          kernel_size: !!python/tuple
+          - 3
+          - 3
+          name: CB_L00_C1_cnv
+          padding: same
+          strides: *id002
+          trainable: true
+          use_bias: true
+        inbound_nodes:
+        - - - CB_L00_C0_bn
+            - 0
+            - 0
+            - {}
+        name: CB_L00_C1_cnv
+      - class_name: BatchNormalization
+        config:
+          axis: -1
+          beta_constraint: null
+          beta_initializer:
+            class_name: Zeros
+            config: {}
+          beta_regularizer: null
+          center: true
+          epsilon: 0.001
+          gamma_constraint: null
+          gamma_initializer:
+            class_name: Ones
+            config: {}
+          gamma_regularizer: null
+          momentum: 0.99
+          moving_mean_initializer:
+            class_name: Zeros
+            config: {}
+          moving_variance_initializer:
+            class_name: Ones
+            config: {}
+          name: CB_L00_C1_bn
+          scale: true
+          trainable: true
+        inbound_nodes:
+        - - - CB_L00_C1_cnv
+            - 0
+            - 0
+            - {}
+        name: CB_L00_C1_bn
+      - class_name: MaxPooling2D
+        config:
+          data_format: channels_last
+          name: CB_L00_MP
+          padding: valid
+          pool_size: !!python/tuple
+          - 2
+          - 2
+          strides: !!python/tuple
+          - 2
+          - 2
+          trainable: true
+        inbound_nodes:
+        - - - CB_L00_C1_bn
+            - 0
+            - 0
+            - {}
+        name: CB_L00_MP
+      - class_name: Conv2D
+        config:
+          activation: linear
+          activity_regularizer: null
+          bias_constraint: null
+          bias_initializer:
+            class_name: Zeros
+            config: {}
+          bias_regularizer: null
+          data_format: channels_last
+          dilation_rate: *id001
+          filters: 96
+          kernel_constraint: null
+          kernel_initializer:
+            class_name: VarianceScaling
+            config:
+              distribution: uniform
+              mode: fan_avg
+              scale: 1.0
+              seed: null
+          kernel_regularizer: null
+          kernel_size: !!python/tuple
+          - 3
+          - 3
+          name: CB_L01_C0_cnv
+          padding: same
+          strides: *id002
+          trainable: true
+          use_bias: true
+        inbound_nodes:
+        - - - CB_L00_MP
+            - 0
+            - 0
+            - {}
+        name: CB_L01_C0_cnv
+      - class_name: BatchNormalization
+        config:
+          axis: -1
+          beta_constraint: null
+          beta_initializer:
+            class_name: Zeros
+            config: {}
+          beta_regularizer: null
+          center: true
+          epsilon: 0.001
+          gamma_constraint: null
+          gamma_initializer:
+            class_name: Ones
+            config: {}
+          gamma_regularizer: null
+          momentum: 0.99
+          moving_mean_initializer:
+            class_name: Zeros
+            config: {}
+          moving_variance_initializer:
+            class_name: Ones
+            config: {}
+          name: CB_L01_C0_bn
+          scale: true
+          trainable: true
+        inbound_nodes:
+        - - - CB_L01_C0_cnv
+            - 0
+            - 0
+            - {}
+        name: CB_L01_C0_bn
+      - class_name: Conv2D
+        config:
+          activation: linear
+          activity_regularizer: null
+          bias_constraint: null
+          bias_initializer:
+            class_name: Zeros
+            config: {}
+          bias_regularizer: null
+          data_format: channels_last
+          dilation_rate: *id001
+          filters: 96
+          kernel_constraint: null
+          kernel_initializer:
+            class_name: VarianceScaling
+            config:
+              distribution: uniform
+              mode: fan_avg
+              scale: 1.0
+              seed: null
+          kernel_regularizer: null
+          kernel_size: !!python/tuple
+          - 3
+          - 3
+          name: CB_L01_C1_cnv
+          padding: same
+          strides: *id002
+          trainable: true
+          use_bias: true
+        inbound_nodes:
+        - - - CB_L01_C0_bn
+            - 0
+            - 0
+            - {}
+        name: CB_L01_C1_cnv
+      - class_name: BatchNormalization
+        config:
+          axis: -1
+          beta_constraint: null
+          beta_initializer:
+            class_name: Zeros
+            config: {}
+          beta_regularizer: null
+          center: true
+          epsilon: 0.001
+          gamma_constraint: null
+          gamma_initializer:
+            class_name: Ones
+            config: {}
+          gamma_regularizer: null
+          momentum: 0.99
+          moving_mean_initializer:
+            class_name: Zeros
+            config: {}
+          moving_variance_initializer:
+            class_name: Ones
+            config: {}
+          name: CB_L01_C1_bn
+          scale: true
+          trainable: true
+        inbound_nodes:
+        - - - CB_L01_C1_cnv
+            - 0
+            - 0
+            - {}
+        name: CB_L01_C1_bn
+      - class_name: MaxPooling2D
+        config:
+          data_format: channels_last
+          name: CB_L01_MP
+          padding: valid
+          pool_size: !!python/tuple
+          - 2
+          - 2
+          strides: !!python/tuple
+          - 2
+          - 2
+          trainable: true
+        inbound_nodes:
+        - - - CB_L01_C1_bn
+            - 0
+            - 0
+            - {}
+        name: CB_L01_MP
+      - class_name: Conv2D
+        config:
+          activation: linear
+          activity_regularizer: null
+          bias_constraint: null
+          bias_initializer:
+            class_name: Zeros
+            config: {}
+          bias_regularizer: null
+          data_format: channels_last
+          dilation_rate: *id001
+          filters: 192
+          kernel_constraint: null
+          kernel_initializer:
+            class_name: VarianceScaling
+            config:
+              distribution: uniform
+              mode: fan_avg
+              scale: 1.0
+              seed: null
+          kernel_regularizer: null
+          kernel_size: !!python/tuple
+          - 3
+          - 3
+          name: CB_L02_C0_cnv
+          padding: same
+          strides: *id002
+          trainable: true
+          use_bias: true
+        inbound_nodes:
+        - - - CB_L01_MP
+            - 0
+            - 0
+            - {}
+        name: CB_L02_C0_cnv
+      - class_name: BatchNormalization
+        config:
+          axis: -1
+          beta_constraint: null
+          beta_initializer:
+            class_name: Zeros
+            config: {}
+          beta_regularizer: null
+          center: true
+          epsilon: 0.001
+          gamma_constraint: null
+          gamma_initializer:
+            class_name: Ones
+            config: {}
+          gamma_regularizer: null
+          momentum: 0.99
+          moving_mean_initializer:
+            class_name: Zeros
+            config: {}
+          moving_variance_initializer:
+            class_name: Ones
+            config: {}
+          name: CB_L02_C0_bn
+          scale: true
+          trainable: true
+        inbound_nodes:
+        - - - CB_L02_C0_cnv
+            - 0
+            - 0
+            - {}
+        name: CB_L02_C0_bn
+      - class_name: Conv2D
+        config:
+          activation: linear
+          activity_regularizer: null
+          bias_constraint: null
+          bias_initializer:
+            class_name: Zeros
+            config: {}
+          bias_regularizer: null
+          data_format: channels_last
+          dilation_rate: *id001
+          filters: 192
+          kernel_constraint: null
+          kernel_initializer:
+            class_name: VarianceScaling
+            config:
+              distribution: uniform
+              mode: fan_avg
+              scale: 1.0
+              seed: null
+          kernel_regularizer: null
+          kernel_size: !!python/tuple
+          - 3
+          - 3
+          name: CB_L02_C1_cnv
+          padding: same
+          strides: *id002
+          trainable: true
+          use_bias: true
+        inbound_nodes:
+        - - - CB_L02_C0_bn
+            - 0
+            - 0
+            - {}
+        name: CB_L02_C1_cnv
+      - class_name: BatchNormalization
+        config:
+          axis: -1
+          beta_constraint: null
+          beta_initializer:
+            class_name: Zeros
+            config: {}
+          beta_regularizer: null
+          center: true
+          epsilon: 0.001
+          gamma_constraint: null
+          gamma_initializer:
+            class_name: Ones
+            config: {}
+          gamma_regularizer: null
+          momentum: 0.99
+          moving_mean_initializer:
+            class_name: Zeros
+            config: {}
+          moving_variance_initializer:
+            class_name: Ones
+            config: {}
+          name: CB_L02_C1_bn
+          scale: true
+          trainable: true
+        inbound_nodes:
+        - - - CB_L02_C1_cnv
+            - 0
+            - 0
+            - {}
+        name: CB_L02_C1_bn
+      - class_name: MaxPooling2D
+        config:
+          data_format: channels_last
+          name: CB_L02_MP
+          padding: valid
+          pool_size: !!python/tuple
+          - 2
+          - 2
+          strides: !!python/tuple
+          - 2
+          - 2
+          trainable: true
+        inbound_nodes:
+        - - - CB_L02_C1_bn
+            - 0
+            - 0
+            - {}
+        name: CB_L02_MP
+      - class_name: Conv2D
+        config:
+          activation: linear
+          activity_regularizer: null
+          bias_constraint: null
+          bias_initializer:
+            class_name: Zeros
+            config: {}
+          bias_regularizer: null
+          data_format: channels_last
+          dilation_rate: *id001
+          filters: 384
+          kernel_constraint: null
+          kernel_initializer:
+            class_name: VarianceScaling
+            config:
+              distribution: uniform
+              mode: fan_avg
+              scale: 1.0
+              seed: null
+          kernel_regularizer: null
+          kernel_size: !!python/tuple
+          - 3
+          - 3
+          name: CB_L03_C0_cnv
+          padding: same
+          strides: *id002
+          trainable: true
+          use_bias: true
+        inbound_nodes:
+        - - - CB_L02_MP
+            - 0
+            - 0
+            - {}
+        name: CB_L03_C0_cnv
+      - class_name: BatchNormalization
+        config:
+          axis: -1
+          beta_constraint: null
+          beta_initializer:
+            class_name: Zeros
+            config: {}
+          beta_regularizer: null
+          center: true
+          epsilon: 0.001
+          gamma_constraint: null
+          gamma_initializer:
+            class_name: Ones
+            config: {}
+          gamma_regularizer: null
+          momentum: 0.99
+          moving_mean_initializer:
+            class_name: Zeros
+            config: {}
+          moving_variance_initializer:
+            class_name: Ones
+            config: {}
+          name: CB_L03_C0_bn
+          scale: true
+          trainable: true
+        inbound_nodes:
+        - - - CB_L03_C0_cnv
+            - 0
+            - 0
+            - {}
+        name: CB_L03_C0_bn
+      - class_name: Conv2D
+        config:
+          activation: linear
+          activity_regularizer: null
+          bias_constraint: null
+          bias_initializer:
+            class_name: Zeros
+            config: {}
+          bias_regularizer: null
+          data_format: channels_last
+          dilation_rate: *id001
+          filters: 384
+          kernel_constraint: null
+          kernel_initializer:
+            class_name: VarianceScaling
+            config:
+              distribution: uniform
+              mode: fan_avg
+              scale: 1.0
+              seed: null
+          kernel_regularizer: null
+          kernel_size: !!python/tuple
+          - 3
+          - 3
+          name: CB_L03_C1_cnv
+          padding: same
+          strides: *id002
+          trainable: true
+          use_bias: true
+        inbound_nodes:
+        - - - CB_L03_C0_bn
+            - 0
+            - 0
+            - {}
+        name: CB_L03_C1_cnv
+      - class_name: BatchNormalization
+        config:
+          axis: -1
+          beta_constraint: null
+          beta_initializer:
+            class_name: Zeros
+            config: {}
+          beta_regularizer: null
+          center: true
+          epsilon: 0.001
+          gamma_constraint: null
+          gamma_initializer:
+            class_name: Ones
+            config: {}
+          gamma_regularizer: null
+          momentum: 0.99
+          moving_mean_initializer:
+            class_name: Zeros
+            config: {}
+          moving_variance_initializer:
+            class_name: Ones
+            config: {}
+          name: CB_L03_C1_bn
+          scale: true
+          trainable: true
+        inbound_nodes:
+        - - - CB_L03_C1_cnv
+            - 0
+            - 0
+            - {}
+        name: CB_L03_C1_bn
+      - class_name: Conv2DTranspose
+        config:
+          activation: linear
+          activity_regularizer: null
+          bias_constraint: null
+          bias_initializer:
+            class_name: Zeros
+            config: {}
+          bias_regularizer: null
+          data_format: channels_last
+          dilation_rate: &id004 !!python/tuple
+          - 1
+          - 1
+          filters: 192
+          kernel_constraint: null
+          kernel_initializer:
+            class_name: VarianceScaling
+            config:
+              distribution: uniform
+              mode: fan_avg
+              scale: 1.0
+              seed: null
+          kernel_regularizer: null
+          kernel_size: !!python/tuple
+          - 2
+          - 2
+          name: EB_L02_DC
+          output_padding: null
+          padding: valid
+          strides: !!python/tuple
+          - 2
+          - 2
+          trainable: true
+          use_bias: true
+        inbound_nodes:
+        - - - CB_L03_C1_bn
+            - 0
+            - 0
+            - {}
+        name: EB_L02_DC
+      - class_name: Concatenate
+        config:
+          axis: -1
+          name: EB_L02_CONC
+          trainable: true
+        inbound_nodes:
+        - - - EB_L02_DC
+            - 0
+            - 0
+            - &id003 {}
+          - - CB_L02_C1_bn
+            - 0
+            - 0
+            - *id003
+        name: EB_L02_CONC
+      - class_name: Conv2D
+        config:
+          activation: linear
+          activity_regularizer: null
+          bias_constraint: null
+          bias_initializer:
+            class_name: Zeros
+            config: {}
+          bias_regularizer: null
+          data_format: channels_last
+          dilation_rate: *id001
+          filters: 192
+          kernel_constraint: null
+          kernel_initializer:
+            class_name: VarianceScaling
+            config:
+              distribution: uniform
+              mode: fan_avg
+              scale: 1.0
+              seed: null
+          kernel_regularizer: null
+          kernel_size: !!python/tuple
+          - 3
+          - 3
+          name: EB_L02_C1_cnv
+          padding: same
+          strides: *id002
+          trainable: true
+          use_bias: true
+        inbound_nodes:
+        - - - EB_L02_CONC
+            - 0
+            - 0
+            - {}
+        name: EB_L02_C1_cnv
+      - class_name: BatchNormalization
+        config:
+          axis: -1
+          beta_constraint: null
+          beta_initializer:
+            class_name: Zeros
+            config: {}
+          beta_regularizer: null
+          center: true
+          epsilon: 0.001
+          gamma_constraint: null
+          gamma_initializer:
+            class_name: Ones
+            config: {}
+          gamma_regularizer: null
+          momentum: 0.99
+          moving_mean_initializer:
+            class_name: Zeros
+            config: {}
+          moving_variance_initializer:
+            class_name: Ones
+            config: {}
+          name: EB_L02_C1_bn
+          scale: true
+          trainable: true
+        inbound_nodes:
+        - - - EB_L02_C1_cnv
+            - 0
+            - 0
+            - {}
+        name: EB_L02_C1_bn
+      - class_name: Conv2D
+        config:
+          activation: linear
+          activity_regularizer: null
+          bias_constraint: null
+          bias_initializer:
+            class_name: Zeros
+            config: {}
+          bias_regularizer: null
+          data_format: channels_last
+          dilation_rate: *id001
+          filters: 192
+          kernel_constraint: null
+          kernel_initializer:
+            class_name: VarianceScaling
+            config:
+              distribution: uniform
+              mode: fan_avg
+              scale: 1.0
+              seed: null
+          kernel_regularizer: null
+          kernel_size: !!python/tuple
+          - 3
+          - 3
+          name: EB_L02_C2_cnv
+          padding: same
+          strides: *id002
+          trainable: true
+          use_bias: true
+        inbound_nodes:
+        - - - EB_L02_C1_bn
+            - 0
+            - 0
+            - {}
+        name: EB_L02_C2_cnv
+      - class_name: BatchNormalization
+        config:
+          axis: -1
+          beta_constraint: null
+          beta_initializer:
+            class_name: Zeros
+            config: {}
+          beta_regularizer: null
+          center: true
+          epsilon: 0.001
+          gamma_constraint: null
+          gamma_initializer:
+            class_name: Ones
+            config: {}
+          gamma_regularizer: null
+          momentum: 0.99
+          moving_mean_initializer:
+            class_name: Zeros
+            config: {}
+          moving_variance_initializer:
+            class_name: Ones
+            config: {}
+          name: EB_L02_C2_bn
+          scale: true
+          trainable: true
+        inbound_nodes:
+        - - - EB_L02_C2_cnv
+            - 0
+            - 0
+            - {}
+        name: EB_L02_C2_bn
+      - class_name: Conv2DTranspose
+        config:
+          activation: linear
+          activity_regularizer: null
+          bias_constraint: null
+          bias_initializer:
+            class_name: Zeros
+            config: {}
+          bias_regularizer: null
+          data_format: channels_last
+          dilation_rate: *id004
+          filters: 96
+          kernel_constraint: null
+          kernel_initializer:
+            class_name: VarianceScaling
+            config:
+              distribution: uniform
+              mode: fan_avg
+              scale: 1.0
+              seed: null
+          kernel_regularizer: null
+          kernel_size: !!python/tuple
+          - 2
+          - 2
+          name: EB_L01_DC
+          output_padding: null
+          padding: valid
+          strides: !!python/tuple
+          - 2
+          - 2
+          trainable: true
+          use_bias: true
+        inbound_nodes:
+        - - - EB_L02_C2_bn
+            - 0
+            - 0
+            - {}
+        name: EB_L01_DC
+      - class_name: Concatenate
+        config:
+          axis: -1
+          name: EB_L01_CONC
+          trainable: true
+        inbound_nodes:
+        - - - EB_L01_DC
+            - 0
+            - 0
+            - &id005 {}
+          - - CB_L01_C1_bn
+            - 0
+            - 0
+            - *id005
+        name: EB_L01_CONC
+      - class_name: Conv2D
+        config:
+          activation: linear
+          activity_regularizer: null
+          bias_constraint: null
+          bias_initializer:
+            class_name: Zeros
+            config: {}
+          bias_regularizer: null
+          data_format: channels_last
+          dilation_rate: *id001
+          filters: 96
+          kernel_constraint: null
+          kernel_initializer:
+            class_name: VarianceScaling
+            config:
+              distribution: uniform
+              mode: fan_avg
+              scale: 1.0
+              seed: null
+          kernel_regularizer: null
+          kernel_size: !!python/tuple
+          - 3
+          - 3
+          name: EB_L01_C1_cnv
+          padding: same
+          strides: *id002
+          trainable: true
+          use_bias: true
+        inbound_nodes:
+        - - - EB_L01_CONC
+            - 0
+            - 0
+            - {}
+        name: EB_L01_C1_cnv
+      - class_name: BatchNormalization
+        config:
+          axis: -1
+          beta_constraint: null
+          beta_initializer:
+            class_name: Zeros
+            config: {}
+          beta_regularizer: null
+          center: true
+          epsilon: 0.001
+          gamma_constraint: null
+          gamma_initializer:
+            class_name: Ones
+            config: {}
+          gamma_regularizer: null
+          momentum: 0.99
+          moving_mean_initializer:
+            class_name: Zeros
+            config: {}
+          moving_variance_initializer:
+            class_name: Ones
+            config: {}
+          name: EB_L01_C1_bn
+          scale: true
+          trainable: true
+        inbound_nodes:
+        - - - EB_L01_C1_cnv
+            - 0
+            - 0
+            - {}
+        name: EB_L01_C1_bn
+      - class_name: Conv2D
+        config:
+          activation: linear
+          activity_regularizer: null
+          bias_constraint: null
+          bias_initializer:
+            class_name: Zeros
+            config: {}
+          bias_regularizer: null
+          data_format: channels_last
+          dilation_rate: *id001
+          filters: 96
+          kernel_constraint: null
+          kernel_initializer:
+            class_name: VarianceScaling
+            config:
+              distribution: uniform
+              mode: fan_avg
+              scale: 1.0
+              seed: null
+          kernel_regularizer: null
+          kernel_size: !!python/tuple
+          - 3
+          - 3
+          name: EB_L01_C2_cnv
+          padding: same
+          strides: *id002
+          trainable: true
+          use_bias: true
+        inbound_nodes:
+        - - - EB_L01_C1_bn
+            - 0
+            - 0
+            - {}
+        name: EB_L01_C2_cnv
+      - class_name: BatchNormalization
+        config:
+          axis: -1
+          beta_constraint: null
+          beta_initializer:
+            class_name: Zeros
+            config: {}
+          beta_regularizer: null
+          center: true
+          epsilon: 0.001
+          gamma_constraint: null
+          gamma_initializer:
+            class_name: Ones
+            config: {}
+          gamma_regularizer: null
+          momentum: 0.99
+          moving_mean_initializer:
+            class_name: Zeros
+            config: {}
+          moving_variance_initializer:
+            class_name: Ones
+            config: {}
+          name: EB_L01_C2_bn
+          scale: true
+          trainable: true
+        inbound_nodes:
+        - - - EB_L01_C2_cnv
+            - 0
+            - 0
+            - {}
+        name: EB_L01_C2_bn
+      - class_name: Conv2DTranspose
+        config:
+          activation: linear
+          activity_regularizer: null
+          bias_constraint: null
+          bias_initializer:
+            class_name: Zeros
+            config: {}
+          bias_regularizer: null
+          data_format: channels_last
+          dilation_rate: *id004
+          filters: 48
+          kernel_constraint: null
+          kernel_initializer:
+            class_name: VarianceScaling
+            config:
+              distribution: uniform
+              mode: fan_avg
+              scale: 1.0
+              seed: null
+          kernel_regularizer: null
+          kernel_size: !!python/tuple
+          - 2
+          - 2
+          name: EB_L00_DC
+          output_padding: null
+          padding: valid
+          strides: !!python/tuple
+          - 2
+          - 2
+          trainable: true
+          use_bias: true
+        inbound_nodes:
+        - - - EB_L01_C2_bn
+            - 0
+            - 0
+            - {}
+        name: EB_L00_DC
+      - class_name: Concatenate
+        config:
+          axis: -1
+          name: EB_L00_CONC
+          trainable: true
+        inbound_nodes:
+        - - - EB_L00_DC
+            - 0
+            - 0
+            - &id006 {}
+          - - CB_L00_C1_bn
+            - 0
+            - 0
+            - *id006
+        name: EB_L00_CONC
+      - class_name: Conv2D
+        config:
+          activation: linear
+          activity_regularizer: null
+          bias_constraint: null
+          bias_initializer:
+            class_name: Zeros
+            config: {}
+          bias_regularizer: null
+          data_format: channels_last
+          dilation_rate: *id001
+          filters: 48
+          kernel_constraint: null
+          kernel_initializer:
+            class_name: VarianceScaling
+            config:
+              distribution: uniform
+              mode: fan_avg
+              scale: 1.0
+              seed: null
+          kernel_regularizer: null
+          kernel_size: !!python/tuple
+          - 3
+          - 3
+          name: EB_L00_C1_cnv
+          padding: same
+          strides: *id002
+          trainable: true
+          use_bias: true
+        inbound_nodes:
+        - - - EB_L00_CONC
+            - 0
+            - 0
+            - {}
+        name: EB_L00_C1_cnv
+      - class_name: BatchNormalization
+        config:
+          axis: -1
+          beta_constraint: null
+          beta_initializer:
+            class_name: Zeros
+            config: {}
+          beta_regularizer: null
+          center: true
+          epsilon: 0.001
+          gamma_constraint: null
+          gamma_initializer:
+            class_name: Ones
+            config: {}
+          gamma_regularizer: null
+          momentum: 0.99
+          moving_mean_initializer:
+            class_name: Zeros
+            config: {}
+          moving_variance_initializer:
+            class_name: Ones
+            config: {}
+          name: EB_L00_C1_bn
+          scale: true
+          trainable: true
+        inbound_nodes:
+        - - - EB_L00_C1_cnv
+            - 0
+            - 0
+            - {}
+        name: EB_L00_C1_bn
+      - class_name: Conv2D
+        config:
+          activation: linear
+          activity_regularizer: null
+          bias_constraint: null
+          bias_initializer:
+            class_name: Zeros
+            config: {}
+          bias_regularizer: null
+          data_format: channels_last
+          dilation_rate: *id001
+          filters: 48
+          kernel_constraint: null
+          kernel_initializer:
+            class_name: VarianceScaling
+            config:
+              distribution: uniform
+              mode: fan_avg
+              scale: 1.0
+              seed: null
+          kernel_regularizer: null
+          kernel_size: !!python/tuple
+          - 3
+          - 3
+          name: EB_L00_C2_cnv
+          padding: same
+          strides: *id002
+          trainable: true
+          use_bias: true
+        inbound_nodes:
+        - - - EB_L00_C1_bn
+            - 0
+            - 0
+            - {}
+        name: EB_L00_C2_cnv
+      - class_name: BatchNormalization
+        config:
+          axis: -1
+          beta_constraint: null
+          beta_initializer:
+            class_name: Zeros
+            config: {}
+          beta_regularizer: null
+          center: true
+          epsilon: 0.001
+          gamma_constraint: null
+          gamma_initializer:
+            class_name: Ones
+            config: {}
+          gamma_regularizer: null
+          momentum: 0.99
+          moving_mean_initializer:
+            class_name: Zeros
+            config: {}
+          moving_variance_initializer:
+            class_name: Ones
+            config: {}
+          name: EB_L00_C2_bn
+          scale: true
+          trainable: true
+        inbound_nodes:
+        - - - EB_L00_C2_cnv
+            - 0
+            - 0
+            - {}
+        name: EB_L00_C2_bn
+      - class_name: DynamicTrimmingLayer
+        config:
+          data_format: channels_last
+          name: dtrim
+          ndim: 4
+          trainable: true
+        inbound_nodes:
+        - - - input
+            - 0
+            - 0
+            - &id007 {}
+          - - EB_L00_C2_bn
+            - 0
+            - 0
+            - *id007
+        name: dtrim
+      name: UNet-0.75-4-D0.0
+      output_layers:
+      - - dtrim
+        - 0
+        - 0
+    inbound_nodes:
+    - - - conv2d_1
+        - 0
+        - 0
+        - {}
+    name: UNet-0.75-4-D0.0
+  - class_name: Conv2D
+    config:
+      activation: relu
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id001
+      filters: 192
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config:
+          distribution: uniform
+          mode: fan_avg
+          scale: 1.0
+          seed: null
+      kernel_regularizer: null
+      kernel_size: !!python/tuple
+      - 3
+      - 3
+      name: conv2d_2
+      padding: same
+      strides: *id002
+      trainable: true
+      use_bias: true
+    inbound_nodes:
+    - - - UNet-0.75-4-D0.0
+        - 1
+        - 0
+        - {}
+    name: conv2d_2
+  - class_name: BatchNormalization
+    config:
+      axis: -1
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: batch_normalization_1
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - conv2d_2
+        - 0
+        - 0
+        - {}
+    name: batch_normalization_1
+  - class_name: Conv2D
+    config:
+      activation: relu
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id001
+      filters: 192
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config:
+          distribution: uniform
+          mode: fan_avg
+          scale: 1.0
+          seed: null
+      kernel_regularizer: null
+      kernel_size: !!python/tuple
+      - 3
+      - 3
+      name: conv2d_3
+      padding: same
+      strides: *id002
+      trainable: true
+      use_bias: true
+    inbound_nodes:
+    - - - batch_normalization_1
+        - 0
+        - 0
+        - {}
+    name: conv2d_3
+  - class_name: Conv2D
+    config:
+      activation: sigmoid
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id001
+      filters: 1
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config:
+          distribution: uniform
+          mode: fan_avg
+          scale: 1.0
+          seed: null
+      kernel_regularizer: null
+      kernel_size: !!python/tuple
+      - 3
+      - 3
+      name: conv2d_4
+      padding: same
+      strides: *id002
+      trainable: true
+      use_bias: true
+    inbound_nodes:
+    - - - conv2d_3
+        - 0
+        - 0
+        - {}
+    name: conv2d_4
+  - class_name: Conv2DTranspose
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id004
+      filters: 1
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config:
+          distribution: uniform
+          mode: fan_avg
+          scale: 1.0
+          seed: null
+      kernel_regularizer: null
+      kernel_size: !!python/tuple
+      - 5
+      - 5
+      name: conv2d_transpose_1
+      output_padding: null
+      padding: same
+      strides: !!python/tuple
+      - 2
+      - 2
+      trainable: true
+      use_bias: true
+    inbound_nodes:
+    - - - conv2d_4
+        - 0
+        - 0
+        - {}
+    name: conv2d_transpose_1
+  - class_name: DynamicTrimmingLayer
+    config:
+      data_format: channels_last
+      name: outer_dtrim
+      ndim: 4
+      trainable: true
+    inbound_nodes:
+    - - - input_1
+        - 0
+        - 0
+        - &id008 {}
+      - - conv2d_transpose_1
+        - 0
+        - 0
+        - *id008
+    name: outer_dtrim
+  name: model_1
+  output_layers:
+  - - outer_dtrim
+    - 0
+    - 0
+keras_version: 2.2.4
