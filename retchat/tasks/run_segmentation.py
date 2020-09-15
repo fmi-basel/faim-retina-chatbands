@@ -22,9 +22,12 @@ from .collector import ChatbandStackCollectorTask
 
 logger = logging.getLogger('luigi-interface')
 
+TARGET_SPACING = (2.07e-7, 2.07e-7, 3e-7, 1)
+
 
 def predict_complete(model, stack):
-    '''
+    '''run model plane-wise on given stack. Output is a probability stack
+    scaled to [0, 255] encoded as uint8.
     '''
     probs = np.asarray([
         model.predict(np.expand_dims(stack[idx], 0))
@@ -36,7 +39,7 @@ def predict_complete(model, stack):
 
 
 def save_segmentation(output_target, probs):
-    '''
+    '''save probs as tiff stack.
     '''
     with output_target.temporary_path() as fout:
         logger.debug('Saving to %s', output_target.fn)
@@ -44,7 +47,7 @@ def save_segmentation(output_target, probs):
 
 
 def _normalize(img, lower, upper):
-    '''
+    '''normalize image from [lower, upper] to [0, 10000].
     '''
     delta = max(upper - lower, 1.)  # avoid div by 0.
     img = (img.astype(np.float32) - lower) / delta
@@ -52,16 +55,15 @@ def _normalize(img, lower, upper):
     return img
 
 
-def _project(img, dx):
+def _project(img, dx, axis=0):
+    '''rolling max projection within a window of 2*dx + 1 along axis.
     '''
-    '''
-    return maximum_filter1d(img, axis=0, size=2 * dx + 1)
+    return maximum_filter1d(img, axis=axis, size=2 * dx + 1)
 
 
 class Preprocessor:
     '''
     '''
-
     def __init__(self, target_spacing, percentiles, dx=10):
         '''
         '''
@@ -102,7 +104,8 @@ class Preprocessor:
             logger.debug('  resampling not required...')
             return False
 
-        if np.all((np.round(factors, 0) - factors) / factors < 0.2) and not np.any(factors < 0.8):
+        if np.all((np.round(factors, 0) - factors) /
+                  factors < 0.2) and not np.any(factors < 0.8):
             logger.debug('  using skimage.transform.downscale_local_mean...')
             stack.data = downscale_local_mean(
                 stack.data, tuple(int(val) for val in np.round(factors)))
@@ -154,21 +157,39 @@ class Stack:
 
 @requires(ChatbandStackCollectorTask)
 class ChatbandSegmentationTask(luigi.Task):
-    '''
+    '''applies the trained segmentation model on a series of inputs.
     '''
     task_namespace = 'retina'
 
     output_folder = luigi.Parameter()
+    '''output folder into which the segmentations are written.
+    '''
+
     split_idx = luigi.IntParameter(default=0)
+    '''determines which split is processed.
+    '''
     split_fraction = luigi.IntParameter(default=1)
+    '''number of splits of the inputs to process.
 
-    model_dir = '/tungstenfs/scratch/gpeters/rempmark/workspace/retina-chatbands/models/N200-percentile_max-block-10/segm/unet-L4-D2-None/run002/'
-    model_weights_fname = 'model_latest.h5'
-    model_architecture_fname = 'model_architecture.yaml'
+    E.g. split_fraction=5 with 100 inputs would generate 5 jobs each
+    processing 20 stacks.
+    '''
 
+    model_dir = luigi.Parameter()
+    '''folder containing model to use.
+    '''
+
+    model_weights_fname = luigi.Parameter(default='model_latest.h5')
+    '''file name of weights to use.
+    '''
+
+    model_architecture_fname = luigi.Parameter(
+        default='model_architecture.yaml')
+    '''file name of architecture to use.
+    '''
     @property
     def input_files(self):
-        '''
+        '''returns paths for all stacks in the given split.
         '''
         with self.input().open('r') as fin:
             df = pandas.read_csv(fin)
@@ -187,10 +208,9 @@ class ChatbandSegmentationTask(luigi.Task):
             os.path.join(self.model_dir, self.model_architecture_fname),
             os.path.join(self.model_dir, self.model_weights_fname))
 
-        preprocessor = Preprocessor(
-            target_spacing=(2.07e-7, 2.07e-7, 3e-7, 1),
-            percentiles=(5, 95),
-            dx=10)
+        preprocessor = Preprocessor(target_spacing=TARGET_SPACING,
+                                    percentiles=(5, 95),
+                                    dx=10)
 
         errors = []
 
@@ -208,15 +228,13 @@ class ChatbandSegmentationTask(luigi.Task):
                 probs = predict_complete(model, stack)
                 logger.debug('Prediction done.')
 
-                #probs = preprocessor.resample_back(stack, probs)
                 save_segmentation(output_file, probs)
 
             except Exception as err:
-                logger.error(
-                    'Error encountered for image %s: %s',
-                    input_file,
-                    err,
-                    exc_info=True)
+                logger.error('Error encountered for image %s: %s',
+                             input_file,
+                             err,
+                             exc_info=True)
                 errors.append(err)
 
         if len(errors):
@@ -235,7 +253,6 @@ class ChatbandSegmentationTask(luigi.Task):
     def output(self):
         '''
         '''
-
         def _get_output(input_file):
             _, fname = os.path.split(input_file)
             fname = os.path.splitext(fname)[0] + '.tif'
@@ -245,17 +262,50 @@ class ChatbandSegmentationTask(luigi.Task):
 
 
 class ParallelChatbandPredictionTask(luigi.WrapperTask):
+    '''Distributes segmentation of many stacks over multiple jobs.
     '''
-    '''
+
     task_namespace = 'retina'
 
-    split_fraction = luigi.IntParameter(default=1)
-    output_folder = luigi.Parameter()
-
-    output_folder = luigi.Parameter()
     output_fname = luigi.Parameter(default='stacks_to_process.txt')
-    input_folder = luigi.Parameter()
+    '''file name of list containing all stacks to process. This will
+    be generated by the collector task.
+    '''
 
+    input_folder = luigi.Parameter()
+    '''input folder which is scanned to identify stacks to process.
+    '''
+
+    output_folder = luigi.Parameter()
+    '''output folder into which the segmentations are written.
+    '''
+
+    split_idx = luigi.IntParameter(default=0)
+    '''determines which split is processed.
+    '''
+    split_fraction = luigi.IntParameter(default=1)
+    '''number of splits of the inputs to process.
+
+    E.g. split_fraction=5 with 100 inputs would generate 5 jobs each
+    processing 20 stacks.
+
+    You should not choose split_fraction larger than the number of
+    files to process.
+
+    '''
+
+    model_dir = luigi.Parameter()
+    '''folder containing model to use.
+    '''
+
+    model_weights_fname = luigi.Parameter(default='model_latest.h5')
+    '''file name of weights to use.
+    '''
+
+    model_architecture_fname = luigi.Parameter(
+        default='model_architecture.yaml')
+    '''file name of architecture to use.
+    '''
     def requires(self):
         '''
         '''
@@ -265,7 +315,10 @@ class ParallelChatbandPredictionTask(luigi.WrapperTask):
                 split_fraction=self.split_fraction,
                 output_folder=self.output_folder,
                 input_folder=self.input_folder,
-                output_fname=self.output_fname)
+                output_fname=self.output_fname,
+                model_dir=self.model_dir,
+                model_weights_fname=self.model_weights_fname,
+                model_architecture_fname=self.model_architecture_fname)
             for idx in range(self.split_fraction)
         ]
 
@@ -317,10 +370,9 @@ class VisualiseSegmentationTask(luigi.Task):
                             img.shape, segm.shape))
 
                         for idx in sorted(
-                                np.random.choice(
-                                    len(segm),
-                                    size=self.number_of_slices,
-                                    replace=False)):
+                                np.random.choice(len(segm),
+                                                 size=self.number_of_slices,
+                                                 replace=False)):
 
                             img_plane = img[:, idx, ...].squeeze()
                             vmin, vmax = np.percentile(img_plane.flat, (5, 95))
@@ -329,14 +381,15 @@ class VisualiseSegmentationTask(luigi.Task):
                             segm_plane = segm[idx, ...].squeeze().T
 
                             axarr = plt.subplots(2, 1, figsize=(16, 6))[1]
-                            axarr[0].imshow(
-                                img_plane,
-                                cmap='Greys',
-                                vmin=vmin,
-                                vmax=vmax,
-                                aspect=aspect)
-                            axarr[1].imshow(
-                                segm_plane, vmin=0, vmax=255, aspect=aspect)
+                            axarr[0].imshow(img_plane,
+                                            cmap='Greys',
+                                            vmin=vmin,
+                                            vmax=vmax,
+                                            aspect=aspect)
+                            axarr[1].imshow(segm_plane,
+                                            vmin=0,
+                                            vmax=255,
+                                            aspect=aspect)
                             axarr[0].set_title('{}: \nplane {}'.format(
                                 os.path.basename(path), idx))
                             plt.tight_layout()
@@ -344,10 +397,11 @@ class VisualiseSegmentationTask(luigi.Task):
                             plt.close()
                     except Exception as err:
                         errors.append(err)
-                        logger.error('Failed for {}: {]'.format(path, err))
+                        logger.error('Failed for {}: {}'.format(path, err))
 
         if errors:
-            raise RuntimeError('Encountered {} errors:\n\t' + '\n\t'.join(str(err) for err in errors))
+            raise RuntimeError('Encountered {} errors:\n\t' +
+                               '\n\t'.join(str(err) for err in errors))
 
     def output(self):
         '''
