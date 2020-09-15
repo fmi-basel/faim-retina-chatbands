@@ -1,8 +1,5 @@
 # coding: utf-8
-
 import os
-from glob import glob
-import warnings
 
 from absl import flags
 from absl import app
@@ -17,7 +14,7 @@ from retchat.dataset import label_to_image_fname
 from retchat.dataset import RegressionRecordParser
 from retchat.sampler import PlaneSampler
 
-from dlutils.video_utils.tfrec_utils import tfrecord_from_sampler
+from dlutils.dataset.tfrec_utils import tfrecord_from_sampler
 
 # Application parameters
 ARGS = flags.FLAGS

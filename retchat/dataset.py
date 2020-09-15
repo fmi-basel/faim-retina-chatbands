@@ -9,9 +9,9 @@ import tensorflow as tf
 from scipy.io import loadmat
 from skimage.external.tifffile import imread
 
-from dlutils.video_utils.tfrec_utils import _int64_feature
-from dlutils.video_utils.tfrec_utils import _float_feature
-from dlutils.video_utils.tfrec_utils import _bytes_feature
+from dlutils.dataset.tfrec_utils import _int64_feature
+from dlutils.dataset.tfrec_utils import _float_feature
+from dlutils.dataset.tfrec_utils import _bytes_feature
 
 UNLABELED = -1.
 
