@@ -11,6 +11,7 @@ setup(name='retina-chatbands',
       install_requires=[
           'luigi',
           'pandas',
+          'tqdm',
           'tensorflow==1.12',
           'keras==2.2.4',
           'keras-applications==1.0.7',
