@@ -45,6 +45,7 @@ class ChatbandSegmentationTask(luigi.Task):
     split_idx = luigi.IntParameter(default=0)
     '''determines which split is processed.
     '''
+
     split_fraction = luigi.IntParameter(default=1)
     '''number of splits of the inputs to process.
 
@@ -64,6 +65,7 @@ class ChatbandSegmentationTask(luigi.Task):
         default='model_architecture.yaml')
     '''file name of architecture to use.
     '''
+
     @property
     def input_files(self):
         '''returns paths for all stacks in the given split.
@@ -71,9 +73,21 @@ class ChatbandSegmentationTask(luigi.Task):
         with self.input().open('r') as fin:
             df = pandas.read_csv(fin)
         paths = df['path'].values.tolist()
-        offset = int(np.ceil(len(paths) / self.split_fraction))
-        start = self.split_idx * offset
-        end = min((self.split_idx + 1) * offset, len(paths))
+
+        def _get_nth_chunk(nth, total_items, num_chunks):
+            offset = total_items / num_chunks
+            indices = np.round(np.linspace(0, total_items,
+                                           num_chunks + 1)).astype(int)
+            return indices[[nth, nth + 1]]
+
+        start, end = _get_nth_chunk(self.split_idx, len(paths),
+                                    self.split_fraction)
+
+        if start == end:
+            raise RuntimeError(
+                'Attempted to process empty chunk. Decrease the split_fraction to process in larger chunks'
+            )
+
         logger.debug('Processing stacks of indices {} to {}'.format(
             start, end))
         return paths[start:end]
@@ -132,6 +146,7 @@ class ChatbandSegmentationTask(luigi.Task):
     def output(self):
         '''
         '''
+
         def _get_output(input_file):
             _, fname = os.path.split(input_file)
             fname = os.path.splitext(fname)[0] + '.tif'
@@ -151,7 +166,7 @@ class ParallelChatbandPredictionTask(luigi.WrapperTask):
     input_folder = luigi.Parameter()
     '''input folder which is scanned to identify stacks to process.
     '''
-    fname_patterns = luigi.Parameter(default=DEFAULT_FNAME_PATTERNS)
+    fname_patterns = luigi.ListParameter(default=DEFAULT_FNAME_PATTERNS)
     '''list of file patterns matching stacks that need to be processed.
     E.g. *conf488*stk'''
     output_folder = luigi.Parameter()
@@ -190,6 +205,7 @@ class ParallelChatbandPredictionTask(luigi.WrapperTask):
     You should not choose split_fraction larger than the number of
     files to process.
     '''
+
     def requires(self):
         '''
         '''
@@ -226,6 +242,7 @@ class VisualiseSegmentationTask(luigi.Task):
     number_of_slices = luigi.IntParameter(default=10)
     '''number of slices per stack to sample.
     '''
+
     def run(self):
         '''
         '''
