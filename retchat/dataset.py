@@ -51,19 +51,20 @@ class DataFinder:
                  data_dirs,
                  label_dir,
                  label_pattern='*.mat',
-                 label_to_img_fn=None):
+                 label_to_img_fn=label_to_image_fname):
         '''
         '''
         self.data_dirs = data_dirs
         self.label_dir = label_dir
         self.label_pattern = label_pattern
+        self.label_to_img_fn = label_to_img_fn
         self.allowed_channels = ['confGFP', 'conf488']
 
     def image_from_label_path(self, label_path):
         '''
         '''
         fname = os.path.basename(label_path)
-        image_fname = label_to_image_fname(fname)
+        image_fname = self.label_to_img_fn(fname)
         for data_dir in self.data_dirs:
             for image_path in glob(os.path.join(data_dir, image_fname)):
                 if any(channel in os.path.basename(image_path)
