@@ -19,13 +19,8 @@ from dlutils.layers.padding import DynamicPaddingLayer
 from dlutils.layers.padding import DynamicTrimmingLayer
 
 from retchat.dataset import SegmentationRecordParser
-# from retchat.losses import get_masked_combined_mae_and_bce
-# from retchat.losses import get_masked_mae
-# from retchat.losses import get_masked_bce
 
 from retchat.models import save_model_architecture
-#from retchat.layers import WeightedRegressionLayer
-#from retchat.layers import WeightedRegressionWithUncertaintyPredictionLayer
 from retchat.augmentations import gaussian_noise, intensity_distortion
 
 # Application parameters
@@ -113,11 +108,8 @@ def construct_model(model_name, n_classes=2, n_channels=1, final_weights=None):
     def _construct():
         '''
         '''
-
-        head_kernel = (3, 3)
         n_features = int(ARGS.width * 64 * n_classes * 2)
         downsampling_factor = ARGS.downsampling
-        projection_axis = 2
 
         input_shape = (None, None, n_channels)
         input = keras.layers.Input(shape=input_shape)

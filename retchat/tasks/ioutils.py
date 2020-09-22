@@ -156,7 +156,7 @@ class StkParser:
     def _find_ndfile(stkpath):
         '''tries to identify the .nd file for a given .stk
         '''
-        dirname, fname = os.path.split(stkpath)
+        dirname, _ = os.path.split(stkpath)
         candidates = glob.glob(os.path.join(dirname, '*nd'))
 
         if len(candidates) <= 0:
