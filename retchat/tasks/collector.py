@@ -16,7 +16,16 @@ import pandas
 logger = logging.getLogger('luigi-interface')
 
 
+# Typical file extensions of stacks that need to be processed.
+DEFAULT_FNAME_PATTERNS = [
+        '*confGFP*stk',
+        '*conf488*stk',
+        '*.czi']
+
+
 def parse_meta(path):
+    '''convenience function to get meta data.
+    '''
     ext = os.path.splitext(path)[1]
     if ext.lower() == '.czi':
         return CziParser.parse(path)
@@ -26,7 +35,7 @@ def parse_meta(path):
 
 
 def imread_raw(path):
-    '''
+    '''convenience function to read image stack.
     '''
     ext = os.path.splitext(path)[1]
     if ext.lower() == '.stk' or ext.lower() in ['.tif', '.tiff']:
@@ -45,7 +54,7 @@ def imread_raw(path):
             logger.debug(meta)
             channel = 1
             logger.debug('Guessing green channel to be {}'.format(channel))
-                
+
         logger.debug('Found green channel in {}'.format(channel))
         img = img[channel]
         logger.warn('Loading only channel 1 from czi!')
@@ -155,7 +164,7 @@ class StkParser:
 
     @staticmethod
     def _find_ndfile(stkpath):
-        '''
+        '''tries to identify the .nd file for a given .stk
         '''
         dirname, fname = os.path.split(stkpath)
         candidates = glob.glob(os.path.join(dirname, '*nd'))
@@ -178,16 +187,27 @@ class StkParser:
 
 
 class ChatbandStackCollectorTask(luigi.Task):
-    '''
+    '''This task collects all images to be processed and writes them to
+    a .txt. Subsequent tasks (like the segmentation) will then use this
+    list to schedule the work.
+
     '''
     output_folder = luigi.Parameter()
+    '''output directory. Note that this parameter is typically shared
+    with downstream tasks.
+    '''
     output_fname = luigi.Parameter(default='stacks_to_process.txt')
-
+    '''filename of output. This is a list of paths to files that need
+    to be processed.
+    '''
     input_folder = luigi.Parameter()
-    fname_patterns = luigi.ListParameter(default=[
-        '*confGFP*stk',
-        '*conf488*stk',
-        '*.czi'])
+    '''folder to be scanned for files that need to be processed.
+    '''
+    fname_patterns = luigi.ListParameter(default=DEFAULT_FNAME_PATTERNS)
+    '''list of file patterns matching stacks that need to be processed.
+    E.g. *conf488*stk
+
+    '''
 
     logger = logging.getLogger('luigi-interface')
 
