@@ -31,4 +31,24 @@ luigi --module retchat.tasks.run_segmentation retina.ParallelChatbandPredictionT
 
 ## Installation
 
-> TODO 
+Frist, clone or download this repository.
+
+Create a python environment (Optional, but recommended):
+
+```
+conda create -n retina-env python=3.6
+conda activate retina-env
+```
+
+If you are on a machine with a CUDA-compatible GPU, you should first install the gpu version of tensorflow:
+
+```
+conda install tensorflow-gpu=1.12
+```
+
+
+Install the package into the current environment
+```
+cd faim-retina-chatbands/
+pip install .
+```
