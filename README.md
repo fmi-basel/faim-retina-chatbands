@@ -21,7 +21,7 @@ The most important parameters are:
 
 ```--input-folder```: input folder which is scanned to identify stacks to process.
 
-```--fname-patterns```: list of file patterns matching stacks that need to be processed. E.g. *conf488*stk, *stk
+```--fname-patterns```: list of file patterns matching stacks that need to be processed. E.g. ```*conf488*.stk, *.czi```.
 
 ```--split-fraction```: split the work into split-fraction number of chunks. This can make it easier to distribute work over different machines and to restart processing in case of failures.
 
