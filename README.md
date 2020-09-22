@@ -16,9 +16,13 @@ luigi --module retchat.tasks.run_segmentation retina.ParallelChatbandPredictionT
 The most important parameters are:
 
 ```--output-folder```: directory into which the segmentations are written.
+
 ```--model-dir```: directory containing the trained model
+
 ```--input-folder```: input folder which is scanned to identify stacks to process.
+
 ```--fname-patterns```: list of file patterns matching stacks that need to be processed. E.g. *conf488*stk, *stk
+
 ```--split-fraction```: split the work into split-fraction number of chunks. This can make it easier to distribute work over different machines and to restart processing in case of failures.
 
 
