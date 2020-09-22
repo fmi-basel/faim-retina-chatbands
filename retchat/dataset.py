@@ -1,3 +1,11 @@
+'''Code for collecting and preprocessing training data.
+
+NOTE as a consequence of how this project evolved, the preprocessing
+here is decoupled from the preprocessing in the prediction (see
+retchat.tasks.run_segmentation). In the long term, one might consider
+harmonizing them.
+
+'''
 import os
 import re
 
@@ -78,7 +86,11 @@ class DataFinder:
 
 
 class Stack:
-    '''
+    '''provides an interface to access XZ/ZY views of a stack.
+    Specializations like MaxBlockStack or Max2R10PreprocessedStack
+    inject certain preprocessing steps like rolling max-projection or
+    normalization.
+
     '''
 
     def __init__(self, path):
@@ -199,7 +211,8 @@ class RescalingNormalizedMaxBlockStack(MaxBlockStack):
 
 
 def load_annotation(label_path):
-    '''
+    '''loads annotation from a .mat file. The annotations
+    are expected to describe the Z coordinate of the chatband.
     '''
     data = loadmat(label_path)
 
@@ -217,6 +230,8 @@ def load_annotation(label_path):
 
 
 class Annotation:
+    '''combines annotations for several planes.
+    '''
     def __init__(self, path):
         '''
         '''
@@ -254,7 +269,9 @@ class Annotation:
 
 
 def annotation_to_segmentation(annotation, shape):
-    '''
+    '''utility function to generate a segmentation map from the
+    z-coordinate-based annotation.
+
     '''
     position = np.ones(shape) * np.arange(0, shape[-1]).reshape((1, 1, -1))
     keys = list(annotation.keys())
@@ -324,7 +341,9 @@ class RegressionRecordParser:
 
 
 def _create_heatmap(target, shape):
-    '''
+    '''utility function to generate heatmap from z-coordinate based
+    annotation.
+
     '''
     position = np.ones(shape) * np.arange(0, shape[-2]).reshape((1, -1, 1))
     heatmap = np.zeros(shape, dtype=np.float32)
@@ -336,6 +355,10 @@ def _create_heatmap(target, shape):
 
 
 class SegmentationRecordParser(RegressionRecordParser):
+    '''specializes the parser from RegressionRecordParser to return not
+    coordinates but a heatmap instead.
+
+    '''
     def parse(self, example):
         '''
         '''
