@@ -4,8 +4,6 @@ A CNN-based detection of retina chatbands.
 
 ## Usage
 
-### Train a new model
-> TODO 
 
 ### Run a given model
 
@@ -31,6 +29,34 @@ If you would like to see all parameters of the task, use:
 ```
 luigi --module retchat.tasks.run_segmentation retina.ParallelChatbandPredictionTask --help
 ```
+
+### Train a new model
+
+Training a model is done in two steps. First, the training data is
+being prepared with ```prepare_dataset.py```. Then, the model is
+trained on the dataset using ```train_segmentation.py```.
+
+Each of them can be called using ```python <script.py> ...```. For details on the arguments, use
+
+```
+conda activate retina-env  # assuming you have setup a conda environment called retina-env.
+cd faim-retina-chatbands/
+python prepare_dataset.py --help
+python train_segmentation.py --help
+```
+
+You find example calls of those two scripts in ```scripts/```. To run
+these examples, simply call:
+
+```
+bash scripts/run_preparation.sh
+bash scripts/run_single_training.sh
+```
+
+Note that these bash scripts contain the paths to the data on
+tungsten. If you are running outside FMI, make sure to adjust the
+paths accordingly.
+
 
 
 ## Installation
