@@ -115,7 +115,8 @@ class Stack:
 
 
 class MaxBlockStack(Stack):
-    '''
+    '''Specializes Stack to access local max-projections for the XZ views.
+
     '''
 
     def __init__(self, path, delta_x, **kwargs):
@@ -125,13 +126,21 @@ class MaxBlockStack(Stack):
         self.dx = delta_x
 
     def __getitem__(self, idx):
+        '''calculates local max projection "on demand" for the given
+        index. For dense processing or sampling, prefer using
+        maximum_filter1d to precalculate the projection volume.
+
+        '''
         return self.data[max(0, idx -
                              self.dx):min(idx + self.dx +
                                           1, len(self.data))].max(axis=0)
 
 
 class Max2R10PreprocessedStack(Stack):
-    '''
+    '''Specializes Stack with:
+    - max projection
+    - rank filter 2x
+    - normalization
     '''
 
     @staticmethod
@@ -167,7 +176,9 @@ class Max2R10PreprocessedStack(Stack):
 
 
 class PercentileNormalizedMaxBlockStack(MaxBlockStack):
-    '''
+    '''Specializes Stack with:
+    - max projection
+    - normalization
     '''
 
     @staticmethod
@@ -187,7 +198,10 @@ class PercentileNormalizedMaxBlockStack(MaxBlockStack):
 
 
 class RescalingNormalizedMaxBlockStack(MaxBlockStack):
-    '''
+    '''Specializes Stack with:
+    - max projection
+    - resampling
+    - normalization
     '''
 
     @staticmethod

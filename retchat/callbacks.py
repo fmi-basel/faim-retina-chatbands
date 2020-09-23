@@ -1,3 +1,5 @@
+'''callbacks for training.
+'''
 import numpy as np
 
 from keras.callbacks import TensorBoard
@@ -34,6 +36,7 @@ def CosineAnnealingSchedule(lr_max, lr_min, epoch_max, reset_decay=1):
 class ExtendedTensorBoard(TensorBoard):
     '''adds learning rate to logged metrics.
 
+    NOTE this becomes obsolete with newer versions of tf.
     '''
 
     def __init__(self, *args, **kwargs):

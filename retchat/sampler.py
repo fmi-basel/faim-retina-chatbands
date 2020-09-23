@@ -1,12 +1,15 @@
+'''sampling used for preparing the training data.
+'''
 import numpy as np
 
 
 class PlaneSampler:
-    '''
+    '''samples annotated planes from a given stack & annotation.
+
     '''
 
     def __init__(self, stack, annotation, n_samples, patch_size):
-        '''
+        '''initializes sampler given an image stack and its annotations.
         '''
         for shape in annotation.shape:
             for ii, jj in zip(stack.shape, shape):
@@ -18,12 +21,13 @@ class PlaneSampler:
         self.patch_size = patch_size
 
     def __iter__(self):
-        '''
+        '''iterate over sampled planes with annotation.
         '''
         mask = self.annotation.is_valid().sum(axis=1)
         threshold = 0.25 * self.stack.shape[1]
         indices = np.argwhere(mask >= threshold).flatten()
 
+        # decrease the threshold until we have at least 50 planes.
         while len(indices) <= 50:
             threshold = 0.8 * threshold
             indices = np.argwhere(mask >= threshold).flatten()
