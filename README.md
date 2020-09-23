@@ -2,8 +2,39 @@
 
 A CNN-based detection of retina chatbands.
 
+
+## Installation
+
+Frist, clone or download this repository.
+
+Create a python environment (Optional, but recommended):
+
+```
+conda create -n retina-env python=3.6
+conda activate retina-env
+```
+
+If you are on a machine with a CUDA-compatible GPU, you should first install the gpu version of tensorflow:
+
+```
+conda install tensorflow-gpu=1.12
+```
+
+
+Install the package into the current environment
+```
+cd faim-retina-chatbands/
+pip install .
+```
+
 ## Usage
 
+The following usage examples assume you are using a terminal (e.g. anaconda prompt) from the base folder of this repo on your storage and that you have activated the corresponding virtual environment (e.g. conda).
+
+```
+conda activate retina-env  # only necessary you have setup a conda environment called retina-env.
+cd faim-retina-chatbands/
+```
 
 ### Run a given model
 
@@ -39,8 +70,6 @@ trained on the dataset using ```train_segmentation.py```.
 Each of them can be called using ```python <script.py> ...```. For details on the arguments, use
 
 ```
-conda activate retina-env  # assuming you have setup a conda environment called retina-env.
-cd faim-retina-chatbands/
 python prepare_dataset.py --help
 python train_segmentation.py --help
 ```
@@ -57,28 +86,3 @@ Note that these bash scripts contain the paths to the data on
 tungsten. If you are running outside FMI, make sure to adjust the
 paths accordingly.
 
-
-
-## Installation
-
-Frist, clone or download this repository.
-
-Create a python environment (Optional, but recommended):
-
-```
-conda create -n retina-env python=3.6
-conda activate retina-env
-```
-
-If you are on a machine with a CUDA-compatible GPU, you should first install the gpu version of tensorflow:
-
-```
-conda install tensorflow-gpu=1.12
-```
-
-
-Install the package into the current environment
-```
-cd faim-retina-chatbands/
-pip install .
-```
