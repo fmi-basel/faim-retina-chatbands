@@ -23,6 +23,7 @@ def predict_complete(model, stack):
     ])
     probs = (np.clip(probs, 0, 1.) * 255).astype(np.uint8)
     probs = probs.squeeze(axis=1)
+    
     return probs
 
 
@@ -52,7 +53,7 @@ def _project(img, dx, axis=0):
 class Preprocessor:
     '''
     '''
-    def __init__(self, target_spacing, percentiles, dx=10):
+    def __init__(self, target_spacing, percentiles, dx): # was dx=10
         '''
         '''
         self.target_spacing = np.asarray(target_spacing)
@@ -100,7 +101,8 @@ class Preprocessor:
             logger.debug('  using skimage.transform.downscale_local_mean...')
             stack.data = downscale_local_mean(
                 stack.data, tuple(int(val) for val in np.round(factors)))
-        # else:
+        else:
+            logger.debug('Not downscaled...')
         #     # NOTE 'rescale' expects the factor to calculate the
         #     # number of resulting pixels, we need to give it the
         #     # *inverse* of our factors!
