@@ -15,7 +15,10 @@ from .ioutils import parse_meta
 DEFAULT_FNAME_PATTERNS = [
         '*confGFP*stk',
         '*conf488*stk',
-        '*.czi']
+        '*.czi',
+        '*Chat.tiff',
+        '*Chat.']
+#        '*40x*.vsi']
 
 
 class ChatbandStackCollectorTask(luigi.Task):
