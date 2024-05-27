@@ -1,3 +1,4 @@
+# If your training data has different scaling than your test data, pay attention to _parse_scales below.
 import os
 import re
 import glob
@@ -8,16 +9,25 @@ import numpy as np
 import czifile
 from skimage.external import tifffile
 
+#import javabridge
+#import bioformats
+#javabridge.start_vm(class_path=bioformats.JARS)
+
 logger = logging.getLogger('luigi-interface')
 
 
 def parse_meta(path):
     '''convenience function to get meta data.
     '''
+    logger.debug('Opening file {}'.format(path))
     ext = os.path.splitext(path)[1]
     if ext.lower() == '.czi':
         return CziParser.parse(path)
     elif ext.lower() == '.stk':
+        return StkParser.parse(path)
+    elif ext.lower() == '.tif':
+        return StkParser.parse(path)
+    elif ext.lower() == '.tiff':
         return StkParser.parse(path)
     raise RuntimeError('Unknown file format')
 
@@ -47,6 +57,11 @@ def imread_raw(path):
         img = img[channel]
         logger.warn('Loading only channel 1 from czi!')
         return img
+#    elif ext.lower() == '.vsi':
+#        img = bioformats.load_image(path, c=1, z=0, t=0, series=None, index=None, rescale=True, wants_max_intensity=False, channel_names=None)
+#        logger.warn('Loading only channel 1 from vsi!')
+#        return img    
+        
     raise NotImplementedError('Unknown extension: {}'.format(ext))
 
 
@@ -124,11 +139,10 @@ class StkParser:
         '''
         scales = {}
         try:
-            scales['scale_z'] = StkParser._find_zstep(
-                StkParser._find_ndfile(path))
+            scales['scale_z'] = StkParser._find_zstep(StkParser._find_ndfile(path))
         except RuntimeError as err:
-            logging.getLogger('luigi-interface').error(
-                '{}. Using 0.3 um as z-step size.'.format(err))
+            logging.getLogger('luigi-interface').error('{}. Using 0.3 um as z-step size.'.format(err))
+            scales['scale_z'] = 3e-7    
 
         # Pixel spacing based on lookup-table from W1-scope/cameras.
         shape = filehandle.series[0].shape[-2:]
@@ -137,10 +151,16 @@ class StkParser:
         elif np.all(shape == (1200, 1200)):
             in_plane = 0.168 * 1e-6
         else:
-            raise RuntimeError('Unknown XY setting for .stk: {}'.format(path))
-
+            in_plane = 0.1 * 1e-6
+            #raise RuntimeError('Unknown XY setting for .stk: {}'.format(path))
+ 
         scales['scale_x'] = in_plane
         scales['scale_y'] = in_plane
+	# pseudo pixel spacing to enforce that data is not downsampled
+        scales['scale_x'] = 2.07e-7
+        scales['scale_y'] = 2.07e-7
+        scales['scale_z'] = 3e-7
+        print(scales)
 
         return scales
 
