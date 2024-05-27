@@ -2,6 +2,8 @@
 
 A CNN-based detection of retina ChAT-bands.
 
+Further details can be found in: Muellner & Roska 2023, https://doi.org/10.1101/2023.03.22.533751
+Please cite our manuscript if you use this code.
 
 ## Installation
 
