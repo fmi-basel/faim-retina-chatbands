@@ -1,6 +1,6 @@
 # Retina-chatbands
 
-A CNN-based detection of retina chatbands.
+A CNN-based detection of retina ChAT-bands.
 
 
 ## Installation
