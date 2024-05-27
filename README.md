@@ -39,8 +39,10 @@ cd faim-retina-chatbands/
 ### Run a given model
 
 ```
-luigi --module retchat.tasks.run_segmentation retina.ParallelChatbandPredictionTask --output-folder <SOME/OUTPUT/FOLDER> --input-folder <SOME/FOLDER/CONTAINING/INPUT/IMAGES> --split-fraction=10 --model-dir models/N200-percentile_max-block-10/segm/unet-L4-D2-None/run002/
+bash segment_data.sh
 ```
+
+Adjust the parameters in segment_data.sh according to your needs.
 
 The most important parameters are:
 
@@ -82,7 +84,5 @@ bash scripts/run_preparation.sh
 bash scripts/run_single_training.sh
 ```
 
-Note that these bash scripts contain the paths to the data on
-tungsten. If you are running outside FMI, make sure to adjust the
-paths accordingly.
+Note that these bash scripts contain path name placeholders - make sure to adjust the paths accordingly.
 
