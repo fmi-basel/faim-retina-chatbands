@@ -10,6 +10,7 @@ import os
 import re
 
 from glob import glob
+from .tasks.ioutils import imread_raw
 
 import numpy as np
 import tensorflow as tf
@@ -30,6 +31,11 @@ def label_to_image_fname(fname):
 
     result = re.sub('(.*)_w(.*)_\s+stack\s+(\d+)\s+.*', '\g<1>_w*_s\g<3>.stk',
                     fname)
+    result = re.sub('(.*) stack\s+(\d+)\s+chat coord.mat', '\g<1>.czi',
+                    result)
+    result = re.sub('(.*).mat', '\g<1>.tiff',
+                    result)
+    print(result)                
     if result is None:
         raise ValueError('Could not substitute fname {}'.format(fname))
     return result
@@ -58,7 +64,7 @@ class DataFinder:
         self.label_dir = label_dir
         self.label_pattern = label_pattern
         self.label_to_img_fn = label_to_img_fn
-        self.allowed_channels = ['confGFP', 'conf488']
+        self.allowed_channels = ['confGFP', 'conf488','czi', 'tif', 'tiff']
 
     def image_from_label_path(self, label_path):
         '''
@@ -76,8 +82,8 @@ class DataFinder:
         '''
         '''
         for label_path in sorted(glob(
-                os.path.join(self.label_dir, self.label_pattern)),
-                                 key=_get_stack_id):
+                os.path.join(self.label_dir, self.label_pattern))):
+                                 #key=_get_stack_id):
             image_path = self.image_from_label_path(label_path)
             if image_path is not None:
                 yield label_path, image_path
@@ -97,7 +103,7 @@ class Stack:
     def __init__(self, path):
         '''
         '''
-        self.data = np.expand_dims(np.moveaxis(imread(path), 0, -1), -1)
+        self.data = np.expand_dims(np.moveaxis(imread_raw(path), 0, -1), -1)
 
     def __getitem__(self, idx):
         return self.data[idx]
